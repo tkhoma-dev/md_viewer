@@ -1,0 +1,27 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "client/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    },
+    {
+      "src": "src/index.js",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": "mds/**"
+      }
+    }
+  ],
+  "routes": [
+    { "src": "^/api/(.*)$", "dest": "src/index.js" },
+    { "src": "^/md_viewer/api/(.*)$", "dest": "src/index.js" },
+    { "src": "^/md_viewer$", "status": 308, "headers": { "Location": "/md_viewer/" } },
+    { "src": "^/md_viewer/(.+)$", "dest": "client/$1" },
+    { "src": "^/md_viewer/$", "dest": "client/index.html" },
+    { "src": "^/$", "status": 308, "headers": { "Location": "/md_viewer/" } }
+  ]
+}
