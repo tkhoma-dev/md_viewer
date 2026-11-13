@@ -126,3 +126,7 @@ cd vercel/client && npm install && npm run dev
 ```
 
 Use the URL Vite prints; with `base: '/md_viewer/'`, paths like `http://localhost:5173/md_viewer/` match production routing. The browser will call `/md_viewer/api/...`; you may need a Vite dev proxy to the API or run requests against a Compose stack for API during UI work.
+
+## Mobile (React Native)
+
+A separate **React Native** app lives in [`android/`](android/) (read-only MD tree + viewer). From `vercel/android/`, `make install-debug` or `npm run android`; see [`android/README.md`](android/README.md).
