@@ -116,6 +116,18 @@ In the editor, use **Image** to upload and insert portable markdown like `![](im
 
 In the sidebar, use **New folder** (or **+** on a folder row). Drag a file onto a folder—or onto the dashed root area—to move it. The `_folder.md` markers are omitted from the tree UI.
 
+## Vercel deploy
+
+- Set the Vercel project **Root Directory** to **`vercel`** (not `vercel/android`).
+- Installs use the public registry (`registry.npmjs.org`) via `vercel/.npmrc`, `client/.npmrc`, and `installCommand` in `vercel.json`.
+- The React Native tree under `android/` is listed in `.vercelignore` so deploy builds never pull the Android lockfile.
+
+If a build still hits Nexus (`E401`):
+
+- Run `git grep nexus.appfire` — any hit in `package-lock.json` must be replaced with `registry.npmjs.org` URLs (installing on a corporate mirror rewrites `resolved` fields).
+- Legacy `builds` in `vercel.json` ignore the dashboard **Install Command**; only lockfile URLs and per-folder `.npmrc` matter for each build.
+- Check Vercel env for `NPM_RC` / `npm_config_registry` pointing at Nexus.
+
 ## Local development (without Docker)
 
 ```bash

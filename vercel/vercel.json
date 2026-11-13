@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "installCommand": "npm install --registry=https://registry.npmjs.org/",
   "builds": [
     {
       "src": "client/package.json",
