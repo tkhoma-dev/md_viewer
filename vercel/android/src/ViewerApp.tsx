@@ -13,7 +13,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { fetchMdFile, fetchMdsTree } from './api/mds';
 import { FileTree } from './components/FileTree';
 import { MarkdownPreview } from './components/MarkdownPreview';
-import { getApiBase } from './config';
+import { getHttpDebugLog, clearHttpDebugLog } from './api/httpDebug';
+import {
+  clearResolvedApiBase,
+  getApiBase,
+  getApiBaseCandidates,
+} from './config';
 import type { TreeNode } from './types';
 
 export function ViewerApp() {
@@ -31,6 +36,8 @@ export function ViewerApp() {
   const [fileError, setFileError] = useState<string | null>(null);
 
   const [mobilePane, setMobilePane] = useState<'tree' | 'file'>('tree');
+  const [showDebug, setShowDebug] = useState(false);
+  const [debugTick, setDebugTick] = useState(0);
 
   const loadTree = useCallback(async () => {
     setTreeError(null);
@@ -42,6 +49,7 @@ export function ViewerApp() {
     } finally {
       setTreeLoading(false);
       setRefreshing(false);
+      setDebugTick(t => t + 1);
     }
   }, []);
 
@@ -71,6 +79,8 @@ export function ViewerApp() {
   );
 
   const onRefresh = useCallback(() => {
+    clearResolvedApiBase();
+    clearHttpDebugLog();
     setRefreshing(true);
     void loadTree();
     if (selectedPath) {
@@ -134,9 +144,6 @@ export function ViewerApp() {
         ) : (
           <Text style={styles.headerTitle}>MD Viewer</Text>
         )}
-        <Text style={styles.headerSub} numberOfLines={1}>
-          Read-only
-        </Text>
       </View>
 
       {splitView ? (
@@ -151,9 +158,39 @@ export function ViewerApp() {
         <View style={styles.fill}>{filePanel}</View>
       )}
 
-      <Text style={styles.apiFoot} numberOfLines={1}>
-        API: {getApiBase()}
-      </Text>
+      <TouchableOpacity
+        accessibilityRole="button"
+        onPress={() => setShowDebug(v => !v)}
+        activeOpacity={0.7}
+      >
+        <Text style={styles.apiFoot} numberOfLines={1}>
+          API: {getApiBase()} — tap for debug
+        </Text>
+      </TouchableOpacity>
+      {showDebug ? (
+        <ScrollView style={styles.debugPanel} nestedScrollEnabled>
+          <Text style={styles.debugTitle}>API debug (refresh #{debugTick})</Text>
+          <Text style={styles.debugMeta}>
+            Candidates:{'\n'}
+            {getApiBaseCandidates().join('\n')}
+          </Text>
+          {getHttpDebugLog().map((row, i) => (
+            <View key={`${row.at}-${i}`} style={styles.debugRow}>
+              <Text style={styles.debugUrl} selectable>
+                {row.status} {row.url}
+              </Text>
+              <Text style={styles.debugBody} selectable>
+                {row.body || '(empty)'}
+              </Text>
+            </View>
+          ))}
+          {!getHttpDebugLog().length ? (
+            <Text style={styles.debugMeta}>
+              No requests logged yet. Pull to refresh the tree.
+            </Text>
+          ) : null}
+        </ScrollView>
+      ) : null}
     </SafeAreaView>
   );
 }
@@ -166,7 +203,6 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     gap: 12,
     paddingHorizontal: 16,
     paddingVertical: 12,
@@ -178,13 +214,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '600',
     color: '#0f172a',
-  },
-  headerSub: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: '#0369a1',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
   },
   backBtn: {
     paddingVertical: 4,
@@ -251,9 +280,43 @@ const styles = StyleSheet.create({
   },
   apiFoot: {
     fontSize: 10,
-    color: '#94a3b8',
+    color: '#64748b',
     paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingVertical: 8,
     backgroundColor: '#f1f5f9',
+  },
+  debugPanel: {
+    maxHeight: 220,
+    backgroundColor: '#0f172a',
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+  },
+  debugTitle: {
+    color: '#e2e8f0',
+    fontWeight: '700',
+    fontSize: 12,
+    marginBottom: 6,
+  },
+  debugMeta: {
+    color: '#94a3b8',
+    fontSize: 10,
+    fontFamily: 'monospace',
+    marginBottom: 8,
+  },
+  debugRow: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: '#334155',
+    paddingVertical: 6,
+  },
+  debugUrl: {
+    color: '#7dd3fc',
+    fontSize: 10,
+    fontFamily: 'monospace',
+  },
+  debugBody: {
+    color: '#cbd5e1',
+    fontSize: 9,
+    fontFamily: 'monospace',
+    marginTop: 4,
   },
 });

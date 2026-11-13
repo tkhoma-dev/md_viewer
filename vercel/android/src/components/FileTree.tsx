@@ -22,7 +22,7 @@ function FileTreeNode({
   selectedPath: string | null;
   onSelectFile: (path: string) => void;
 }) {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   const pad = 8 + depth * 14;
 
   if (isFileNode(node)) {

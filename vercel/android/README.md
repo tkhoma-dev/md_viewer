@@ -8,7 +8,9 @@ Data comes from the same API as the web app (`GET /api/mds`, `GET /api/mds/file?
 
 Default production base is in [`src/config.ts`](src/config.ts):
 
-`https://md-viewer-pied.vercel.app/md_viewer/api`
+`https://md-viewer-3ub2.vercel.app/md_viewer/api` (tree: […/mds](https://md-viewer-3ub2.vercel.app/md_viewer/api/mds))
+
+**404 troubleshooting:** tap **API: … — tap for debug** at the bottom. To change the host, edit `DEPLOY_ORIGIN` in `src/config.ts`, then `make install-debug`.
 
 For a **local** Vercel/Express server on your machine (USB debugging):
 
@@ -20,6 +22,7 @@ For a **local** Vercel/Express server on your machine (USB debugging):
 
 - Node.js **≥ 22.11** (see `package.json` `engines`)
 - [React Native environment](https://reactnative.dev/docs/set-up-your-environment)
+- Android SDK — `make build-debug` / `make install-debug` write `android/local.properties` using `ANDROID_HOME` or `~/Android/Sdk` (gitignored). Set `ANDROID_HOME` if the SDK is elsewhere.
 
 ## Run on Android
 
@@ -33,11 +36,18 @@ For a **local** Vercel/Express server on your machine (USB debugging):
 ```bash
 cd vercel/android
 npm install
-make install-debug          # offline-style install
-# or dev with Metro:
-make start                  # terminal 1
-npm run android             # terminal 2
+make install-debug          # APK includes JS bundle — no Metro
 ```
+
+**Live reload (Metro):**
+
+```bash
+make start                  # terminal 1
+make reverse-metro          # USB phone only (emulator uses 10.0.2.2)
+npm run android             # terminal 2 — build, install, attach to Metro
+```
+
+If you see *“make sure you're running Metro”* after changing native/JS code, either run Metro + `npm run android`, or reinstall with `make install-debug` (re-embeds the bundle).
 
 ## UI
 
