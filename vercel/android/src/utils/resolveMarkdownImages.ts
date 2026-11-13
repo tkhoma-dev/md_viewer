@@ -22,6 +22,12 @@ export function resolveImageUrl(href: string): string {
     return raw;
   }
   const origin = getApiOrigin();
+  if (raw.startsWith('/md_viewer/api/mds/image')) {
+    return `${origin}${raw}`;
+  }
+  if (raw.startsWith('/api/mds/image')) {
+    return `${origin}/md_viewer${raw}`;
+  }
   if (raw.startsWith('/md_viewer/api/') || raw.startsWith('/api/')) {
     return `${origin}${raw}`;
   }

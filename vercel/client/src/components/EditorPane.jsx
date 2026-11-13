@@ -1,6 +1,33 @@
 import { useRef } from "react";
+
+/** Last known editor selection (used when toolbar buttons would steal focus). */
+function useEditorSelectionRef() {
+  const selectionRef = useRef({ start: 0, end: 0 });
+  const rememberSelection = (ta) => {
+    if (!ta) return;
+    selectionRef.current = {
+      start: ta.selectionStart,
+      end: ta.selectionEnd,
+    };
+  };
+  const selectionForAction = (ta) => {
+    if (!ta) return null;
+    const liveStart = ta.selectionStart;
+    const liveEnd = ta.selectionEnd;
+    if (liveStart !== liveEnd) {
+      return { start: liveStart, end: liveEnd };
+    }
+    const { start, end } = selectionRef.current;
+    if (start !== end) {
+      return { start, end };
+    }
+    return null;
+  };
+  return { rememberSelection, selectionForAction };
+}
 import { CollapseIcon } from "./icons.jsx";
 import { insertInTextarea } from "../utils/insertInTextarea.js";
+import { wrapMarkInTextarea } from "../utils/wrapMark.js";
 
 export function EditorPane({
   collapsed,
@@ -14,6 +41,11 @@ export function EditorPane({
   imageUploadState,
 }) {
   const fileInputRef = useRef(null);
+  const { rememberSelection, selectionForAction } = useEditorSelectionRef();
+
+  const keepTextareaSelection = (event) => {
+    event.preventDefault();
+  };
   return (
     <section
       className={
@@ -51,10 +83,11 @@ export function EditorPane({
                   e.target.value = "";
                   if (!file || !onInsertImage) return;
                   const ta = editorScrollRef?.current;
+                  const sel = selectionForAction(ta);
                   const result = await onInsertImage(
                     file,
-                    ta?.selectionStart,
-                    ta?.selectionEnd,
+                    sel?.start,
+                    sel?.end,
                   );
                   if (!result) return;
                   const { nextValue, cursor } = insertInTextarea(
@@ -76,10 +109,37 @@ export function EditorPane({
                 type="button"
                 className="cursor-pointer rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
                 disabled={!selectedPath || imageUploadState === "uploading"}
+                onMouseDown={keepTextareaSelection}
                 onClick={() => fileInputRef.current?.click()}
                 title="Upload image to storage and insert markdown"
               >
                 {imageUploadState === "uploading" ? "Uploading…" : "Image"}
+              </button>
+              <button
+                type="button"
+                className="cursor-pointer rounded-lg border border-amber-300 bg-amber-50 px-2 py-1 text-xs font-medium text-amber-900 shadow-sm transition hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={!selectedPath}
+                onMouseDown={keepTextareaSelection}
+                onClick={() => {
+                  const ta = editorScrollRef?.current;
+                  if (!ta) return;
+                  const sel = selectionForAction(ta);
+                  if (!sel) return;
+                  const result = wrapMarkInTextarea(
+                    draft,
+                    sel.start,
+                    sel.end,
+                  );
+                  if (!result) return;
+                  onDraftChange(result.nextValue);
+                  requestAnimationFrame(() => {
+                    ta.focus();
+                    ta.setSelectionRange(result.cursor, result.cursor);
+                  });
+                }}
+                title="Wrap selection in highlight (mark) — shown in preview; save to keep"
+              >
+                Mark
               </button>
             </div>
           </div>
@@ -88,6 +148,10 @@ export function EditorPane({
             className="min-h-0 w-full flex-1 resize-none overflow-auto rounded-lg border border-slate-300 bg-white p-3 font-mono text-sm leading-relaxed text-slate-900 shadow-inner outline-none ring-sky-500/30 placeholder:text-slate-400 focus:border-sky-400 focus:ring-2 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
             value={draft}
             onScroll={onEditorScroll}
+            onSelect={(e) => rememberSelection(e.currentTarget)}
+            onKeyUp={(e) => rememberSelection(e.currentTarget)}
+            onMouseUp={(e) => rememberSelection(e.currentTarget)}
+            onBlur={(e) => rememberSelection(e.currentTarget)}
             onChange={(e) => onDraftChange(e.target.value)}
             placeholder={
               selectedPath ? "Edit markdown…" : "Pick a file from the list"

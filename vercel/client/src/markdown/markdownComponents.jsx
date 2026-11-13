@@ -2,6 +2,16 @@ import { resolveImageUrl } from "../lib/resolveMarkdownImages.js";
 
 /** Cursor/VS Code–style table chrome (GFM tables need `remark-gfm`). */
 export const markdownComponents = {
+  mark({ children, ...props }) {
+    return (
+      <mark
+        {...props}
+        className="rounded-sm bg-amber-200/90 px-0.5 text-slate-900 box-decoration-clone"
+      >
+        {children}
+      </mark>
+    );
+  },
   img({ src, alt, ...props }) {
     return (
       <img

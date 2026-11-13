@@ -1,10 +1,11 @@
-import React, { useMemo } from 'react';
-import { Image, StyleSheet, Text, View } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import Markdown from 'react-native-markdown-display';
 import {
   resolveImageUrl,
   resolveMarkdownImageUrls,
 } from '../utils/resolveMarkdownImages';
+import { FullscreenImageModal } from './FullscreenImageModal';
 
 type Props = {
   path: string | null;
@@ -58,32 +59,57 @@ const markdownStyles = StyleSheet.create({
   },
 });
 
-const markdownRules = {
-  image: (
-    node: { key: string; attributes: { src?: string; alt?: string } },
-    _children: unknown,
-    _parent: unknown,
-    styles: typeof markdownStyles,
-  ) => {
-    const src = node.attributes?.src ?? '';
-    const uri = resolveImageUrl(src);
-    const alt = node.attributes?.alt ?? '';
-    return (
-      <Image
-        key={node.key}
-        accessibilityLabel={alt || 'Image'}
-        source={{ uri }}
-        style={[styles.image, { width: '100%', height: 220 }]}
-        resizeMode="contain"
-      />
-    );
-  },
-};
-
 export function MarkdownPreview({ path, content, loading, error }: Props) {
+  const [fullscreenImage, setFullscreenImage] = useState<{
+    uri: string;
+    alt: string;
+  } | null>(null);
+
   const resolvedContent = useMemo(
     () => (content ? resolveMarkdownImageUrls(content) : ''),
     [content],
+  );
+
+  const markdownRules = useMemo(
+    () => ({
+      image: (
+        node: { key: string; attributes: { src?: string; alt?: string } },
+        _children: unknown,
+        _parent: unknown,
+        styles: Record<string, object>,
+      ) => {
+        const src = node.attributes?.src ?? '';
+        const uri = resolveImageUrl(src);
+        if (!uri) {
+          return null;
+        }
+        const alt = node.attributes?.alt ?? '';
+        return (
+          <Pressable
+            key={node.key}
+            accessibilityRole="button"
+            accessibilityLabel={alt ? `View ${alt} fullscreen` : 'View image fullscreen'}
+            onPress={() => setFullscreenImage({ uri, alt })}
+            style={({ pressed }) => [
+              thumbStyles.imageTapTarget,
+              pressed && thumbStyles.imagePressed,
+            ]}
+          >
+            <Image
+              accessibilityLabel={alt || 'Image'}
+              source={{ uri }}
+              style={[
+                styles.image,
+                thumbStyles.imageThumb,
+                thumbStyles.imageFixed,
+              ]}
+              resizeMode="contain"
+            />
+          </Pressable>
+        );
+      },
+    }),
+    [],
   );
 
   if (!path) {
@@ -113,11 +139,19 @@ export function MarkdownPreview({ path, content, loading, error }: Props) {
   }
 
   return (
-    <View style={styles.markdownWrap}>
-      <Markdown style={markdownStyles} rules={markdownRules}>
-        {resolvedContent}
-      </Markdown>
-    </View>
+    <>
+      <View style={styles.markdownWrap}>
+        <Markdown style={markdownStyles} rules={markdownRules}>
+          {resolvedContent}
+        </Markdown>
+      </View>
+      <FullscreenImageModal
+        visible={fullscreenImage != null}
+        uri={fullscreenImage?.uri ?? null}
+        alt={fullscreenImage?.alt}
+        onClose={() => setFullscreenImage(null)}
+      />
+    </>
   );
 }
 
@@ -141,8 +175,22 @@ const styles = StyleSheet.create({
   markdownWrap: {
     paddingBottom: 24,
   },
-  image: {
+});
+
+const thumbStyles = StyleSheet.create({
+  imageTapTarget: {
+    alignSelf: 'stretch',
+    width: '100%',
+  },
+  imageThumb: {
     backgroundColor: '#f8fafc',
     borderRadius: 8,
+  },
+  imageFixed: {
+    width: '100%',
+    height: 220,
+  },
+  imagePressed: {
+    opacity: 0.85,
   },
 });
