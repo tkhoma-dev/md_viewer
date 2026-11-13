@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { API_BASE } from "../lib/api.js";
 import { createFolder } from "../lib/createFolder.js";
+import { deleteFolder } from "../lib/deleteFolder.js";
 import { deleteMarkdownFile } from "../lib/deleteMarkdownFile.js";
 import { moveMarkdownFile } from "../lib/moveMarkdownFile.js";
 import { saveMarkdownFile } from "../lib/saveMarkdownFile.js";
@@ -118,6 +119,36 @@ export function useMarkdownFiles({ onFileLoaded }) {
     createFolderAt(parentFolderFromSelectedFile(selectedPath));
   }, [createFolderAt, selectedPath]);
 
+  const deleteFolderAt = useCallback(
+    async (folderPath) => {
+      if (!folderPath) return;
+      if (
+        !window.confirm(
+          `Delete folder "${folderPath}" and everything inside it?`,
+        )
+      ) {
+        return;
+      }
+      setTreeActionState("deleting folder…");
+      try {
+        await deleteFolder(folderPath);
+        if (
+          selectedPath &&
+          (selectedPath === folderPath ||
+            selectedPath.startsWith(`${folderPath}/`))
+        ) {
+          setSelectedPath(null);
+          setDraft("");
+        }
+        await refreshList();
+        setTreeActionState("Folder deleted");
+      } catch (e) {
+        setTreeActionState(String(e));
+      }
+    },
+    [refreshList, selectedPath],
+  );
+
   const moveFileToFolder = useCallback(
     async (fromPath, targetFolder) => {
       const toPath = destinationPathInFolder(fromPath, targetFolder);
@@ -175,6 +206,7 @@ export function useMarkdownFiles({ onFileLoaded }) {
     createFolderAt,
     createFolderNearSelection,
     moveFileToFolder,
+    deleteFolderAt,
     treeActionState,
   };
 }

@@ -87,6 +87,33 @@ export async function moveMarkdownFile(storage, fromPath, toPath) {
  * @param {import("./storage/index.js").MdsStorage} storage
  * @param {string} folderPath
  */
+/**
+ * @param {import("./storage/index.js").MdsStorage} storage
+ * @param {string} folderPath
+ */
+export async function deleteFolder(storage, folderPath) {
+  const dir = assertSafeFolderPath(folderPath);
+  const paths = await storage.listRelativePaths();
+  const prefix = `${dir}/`;
+  const marker = folderPlaceholderMdPath(dir);
+  const toDelete = paths.filter(
+    (p) => p === marker || p.startsWith(prefix),
+  );
+  if (toDelete.length === 0) {
+    const err = new Error("folder not found");
+    err.status = 404;
+    throw err;
+  }
+  for (const rel of toDelete) {
+    await storage.deleteFile(rel);
+  }
+  const parent = parentFolderPath(`${dir}/x.md`);
+  if (parent) {
+    await pruneEmptyFolder(storage, parent);
+  }
+  return { path: dir, deletedFiles: toDelete.length };
+}
+
 export async function pruneEmptyFolder(storage, folderPath) {
   const dir = assertSafeFolderPath(folderPath);
   const paths = await storage.listRelativePaths();

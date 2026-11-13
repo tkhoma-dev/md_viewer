@@ -1,4 +1,25 @@
-import { isFolderPlaceholderPath } from "../mdsPaths.js";
+import { isFolderPlaceholderPath, parentFolderPath } from "../mdsPaths.js";
+
+/**
+ * @param {Array<{ type: 'dir' | 'file', name: string, path: string, children?: unknown[] }>} nodes
+ * @param {string} dirPath
+ */
+function ensureDirPath(nodes, dirPath) {
+  if (!dirPath) return;
+  const parts = dirPath.split("/");
+  let pathSoFar = "";
+  let level = nodes;
+
+  for (const name of parts) {
+    pathSoFar = pathSoFar ? `${pathSoFar}/${name}` : name;
+    let dir = level.find((n) => n.type === "dir" && n.name === name);
+    if (!dir) {
+      dir = { type: "dir", name, path: pathSoFar, children: [] };
+      level.push(dir);
+    }
+    level = /** @type {{ children: typeof nodes }} */ (dir).children;
+  }
+}
 
 /**
  * @param {string[]} paths Relative .md paths (e.g. `notes/a.md`)
@@ -10,7 +31,10 @@ export function buildTreeFromPaths(paths) {
 
   for (const relPath of sorted) {
     if (!relPath.endsWith(".md")) continue;
-    if (isFolderPlaceholderPath(relPath)) continue;
+    if (isFolderPlaceholderPath(relPath)) {
+      ensureDirPath(root, parentFolderPath(relPath));
+      continue;
+    }
     const parts = relPath.split("/");
     let nodes = root;
     let pathSoFar = "";

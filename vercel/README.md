@@ -107,6 +107,7 @@ API (also proxied under `/md_viewer/api/…` in the browser):
 - `PUT /api/mds/file` — JSON `{ "path": "…", "content": "…" }` to save to Blob.
 - `DELETE /api/mds/file` — JSON `{ "path": "…" }` (or `?path=…`) to remove the blob permanently.
 - `POST /api/mds/folder` — JSON `{ "parent": "optional/parent", "name": "folder-name" }` creates an empty folder (stores a hidden `…/_folder.md` marker in Blob).
+- `DELETE /api/mds/folder` — JSON `{ "path": "folder/path" }` removes the folder and all markdown blobs under it.
 - `POST /api/mds/file/move` — JSON `{ "from": "old/path.md", "to": "new/path.md" }` moves a file within Blob storage.
 
 In the sidebar, use **New folder** (or **+** on a folder row). Drag a file onto a folder—or onto the dashed root area—to move it. The `_folder.md` markers are omitted from the tree UI.

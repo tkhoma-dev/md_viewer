@@ -35,6 +35,7 @@ export default function App() {
     createFolderNearSelection,
     createFolderAt,
     moveFileToFolder,
+    deleteFolderAt,
     treeActionState,
   } = useMarkdownFiles({ onFileLoaded: resetScroll });
 
@@ -72,6 +73,7 @@ export default function App() {
             onCreateFolder={createFolderNearSelection}
             onCreateSubfolder={createFolderAt}
             onMoveFile={moveFileToFolder}
+            onDeleteFolder={deleteFolderAt}
           />
 
           <div className="flex min-h-0 min-w-0 w-full flex-col gap-3 lg:min-h-0">

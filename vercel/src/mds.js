@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   createFolder,
+  deleteFolder,
   moveMarkdownFile,
   pruneEmptyFolder,
 } from "./mdsFileOps.js";
@@ -58,6 +59,26 @@ export function createMdsRouter(mdsStorage) {
       res.json({ ok: true, path: normalized });
     } catch (e) {
       const err = /** @type {Error} */ (e);
+      res.status(400).json({ error: err.message });
+    }
+  });
+
+  router.delete("/folder", async (req, res) => {
+    const rel = req.body?.path ?? req.query.path;
+    if (typeof rel !== "string" || !rel.trim()) {
+      res.status(400).json({ error: "folder path is required (query or JSON body)" });
+      return;
+    }
+    try {
+      const folderPath = assertSafeFolderPath(rel.trim());
+      const result = await deleteFolder(mdsStorage, folderPath);
+      res.json({ ok: true, ...result });
+    } catch (e) {
+      const err = /** @type {Error & { status?: number }} */ (e);
+      if (err.status === 404) {
+        res.status(404).json({ error: err.message });
+        return;
+      }
       res.status(400).json({ error: err.message });
     }
   });

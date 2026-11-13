@@ -26,6 +26,7 @@ export function FilesSidebar({
   onCreateFolder,
   onCreateSubfolder,
   onMoveFile,
+  onDeleteFolder,
 }) {
   const depthRef = useRef(0);
   const [rootOver, setRootOver] = useState(false);
@@ -34,7 +35,14 @@ export function FilesSidebar({
     statusText &&
     uploadState !== "uploading" &&
     !String(uploadState).startsWith("uploaded:") &&
-    !["creating…", "moving…", "Folder created", "Moved"].includes(statusText);
+    ![
+      "creating…",
+      "moving…",
+      "deleting folder…",
+      "Folder created",
+      "Moved",
+      "Folder deleted",
+    ].includes(statusText);
 
   const onRootDragEnter = useCallback((e) => {
     const hasInternal = e.dataTransfer.types.includes(INTERNAL_DRAG_TYPE);
@@ -128,6 +136,7 @@ export function FilesSidebar({
           onUploadToFolder={onUploadToFolder}
           onCreateSubfolder={onCreateSubfolder}
           onMoveFile={onMoveFile}
+          onDeleteFolder={onDeleteFolder}
         />
         {tree.length === 0 && !loadError && (
           <p className="text-sm text-slate-500">

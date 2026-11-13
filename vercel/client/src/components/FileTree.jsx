@@ -17,6 +17,7 @@ function FileTreeNode({
   onUploadToFolder,
   onCreateSubfolder,
   onMoveFile,
+  onDeleteFolder,
   defaultOpen = true,
 }) {
   const [open, setOpen] = useState(defaultOpen);
@@ -123,23 +124,43 @@ function FileTreeNode({
         >
           +
         </button>
+        <button
+          type="button"
+          className="shrink-0 rounded px-1.5 py-0.5 text-xs font-medium text-red-500 hover:bg-red-100 hover:text-red-800"
+          title="Delete folder"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDeleteFolder?.(node.path);
+          }}
+        >
+          ×
+        </button>
       </div>
-      {open && node.children?.length > 0 && (
-        <ul className="mt-0.5 list-none space-y-0.5 p-0">
-          {node.children.map((child) => (
-            <FileTreeNode
-              key={child.path}
-              node={child}
-              depth={depth + 1}
-              selectedPath={selectedPath}
-              onSelect={onSelect}
-              onUploadToFolder={onUploadToFolder}
-              onCreateSubfolder={onCreateSubfolder}
-              onMoveFile={onMoveFile}
-            />
-          ))}
-        </ul>
-      )}
+      {open &&
+        (node.children?.length > 0 ? (
+          <ul className="mt-0.5 list-none space-y-0.5 p-0">
+            {node.children.map((child) => (
+              <FileTreeNode
+                key={child.path}
+                node={child}
+                depth={depth + 1}
+                selectedPath={selectedPath}
+                onSelect={onSelect}
+                onUploadToFolder={onUploadToFolder}
+                onCreateSubfolder={onCreateSubfolder}
+                onMoveFile={onMoveFile}
+                onDeleteFolder={onDeleteFolder}
+              />
+            ))}
+          </ul>
+        ) : (
+          <p
+            className="mt-0.5 py-0.5 text-xs italic text-slate-400"
+            style={{ paddingLeft: `${1.25 + depth * 0.75}rem` }}
+          >
+            (empty)
+          </p>
+        ))}
     </li>
   );
 }
@@ -151,6 +172,7 @@ export function FileTree({
   onUploadToFolder,
   onCreateSubfolder,
   onMoveFile,
+  onDeleteFolder,
 }) {
   if (!tree?.length) return null;
   return (
@@ -165,6 +187,7 @@ export function FileTree({
           onUploadToFolder={onUploadToFolder}
           onCreateSubfolder={onCreateSubfolder}
           onMoveFile={onMoveFile}
+          onDeleteFolder={onDeleteFolder}
         />
       ))}
     </ul>
