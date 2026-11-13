@@ -6,7 +6,7 @@ function uploadStatusText(uploadState) {
   if (uploadState === "uploading") return "Uploading…";
   if (typeof uploadState === "string" && uploadState.startsWith("uploaded:")) {
     const n = uploadState.slice("uploaded:".length);
-    return `Saved ${n} file${n === "1" ? "" : "s"} to mds/`;
+    return `Saved ${n} file${n === "1" ? "" : "s"} to storage`;
   }
   if (uploadState && uploadState !== "uploading") {
     return uploadState;
@@ -45,11 +45,8 @@ export function FilesSidebar({
         Files
       </h2>
       <p className="mb-2 shrink-0 text-xs text-slate-500">
-        Drop .md files or folders here to add them under{" "}
-        <code className="rounded bg-slate-100 px-1 py-0.5 text-slate-600">
-          mds/
-        </code>
-        . Drop onto a folder to upload inside it.
+        Drop .md files or folders here to add them to Blob storage. Drop onto a
+        folder to upload inside it.
       </p>
       {statusText && (
         <p
@@ -81,11 +78,7 @@ export function FilesSidebar({
         />
         {tree.length === 0 && !loadError && (
           <p className="text-sm text-slate-500">
-            No files yet. Drop markdown here or add files under{" "}
-            <code className="rounded bg-slate-100 px-1 py-0.5 text-slate-700">
-              mds/
-            </code>
-            .
+            No files yet. Drop markdown here to create files in Blob.
           </p>
         )}
       </div>

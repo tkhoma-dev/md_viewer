@@ -1,4 +1,5 @@
 node_modules/
 dist/
+vercel/.env
 full-stack/server/comments/
 full-stack/server/access/

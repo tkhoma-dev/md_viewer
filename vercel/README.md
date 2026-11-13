@@ -76,88 +76,47 @@ Then use **http://localhost:8080/md_viewer/** (and the same host/port for API pa
 - **client** — Built static assets served by nginx inside that container.
 - **server** — Express on port 3000 (internal to the Compose network).
 
-### Markdown storage
+### Markdown storage (Vercel Blob only)
 
-| Environment | Backend |
-|-------------|---------|
-| **Vercel** (production) | **Vercel Blob** when `BLOB_READ_WRITE_TOKEN` is set — each file is stored as `mds/<relative-path>.md` |
-| **Local / Docker** | Filesystem: **`./mds`** bind-mounted as `/data/mds` when the Blob token is **not** set |
+There is **no `mds/` folder in the repo**. All list / read / write goes to **Vercel Blob** under keys `mds/<relative-path>.md`.
 
-On Vercel the deployment disk is read-only, so saves go to Blob, not to `mds/` in the repo.
+**Required environment variable:**
 
-#### One-time import from `mds/` into Blob
+- **`BLOB_READ_WRITE_TOKEN`** — on Vercel, in Docker, and for `npm start` locally
 
-1. In Vercel: **Storage → Blob**, create a store.
-2. Add environment variables (Production, and Preview if needed):
-   - **`BLOB_READ_WRITE_TOKEN`** — from the Blob store
-   - **`MDS_IMPORT_SECRET`** — a long random string you choose (protects import endpoints)
-3. Redeploy so the server uses Blob.
+Add or upload markdown via the web UI (drag-and-drop) or `PUT /api/mds/file`.
 
-**Option A — import on Vercel (HTTP, good when you cannot run CLI against prod)**
+#### Docker Compose
 
-While `vercel/mds/` still exists in the repo, temporarily add to `vercel.json` under the Node build:
+Create `vercel/.env` (gitignored):
 
-```json
-"config": { "includeFiles": "mds/**" }
+```env
+BLOB_READ_WRITE_TOKEN=vercel_blob_rw_...
 ```
 
-Deploy, then call (replace host and secret):
+Then `make up`. The server container does **not** mount a local `mds/` volume.
 
-```bash
-curl -sS -X POST "https://YOUR_APP.vercel.app/api/admin/mds/import-from-disk" \
-  -H "Authorization: Bearer YOUR_MDS_IMPORT_SECRET"
-```
+#### Health check
 
-Response example: `{ "ok": true, "count": 12, "paths": ["..."], "sourceDir": "..." }`.
-
-Then remove `includeFiles` and delete **`vercel/mds/`** from git; redeploy again.
-
-**Option B — import from your laptop (CLI)**
-
-```bash
-cd vercel
-npm install
-export BLOB_READ_WRITE_TOKEN=vercel_blob_rw_...
-npm run import-mds-to-blob
-# or: make import-mds-to-blob
-```
-
-**Option C — bulk JSON (no `mds/` on server)**
-
-```bash
-curl -sS -X POST "https://YOUR_APP.vercel.app/api/admin/mds/import" \
-  -H "Authorization: Bearer YOUR_MDS_IMPORT_SECRET" \
-  -H "Content-Type: application/json" \
-  -d '{"files":[{"path":"notes.md","content":"# Hello\n"}]}'
-```
-
-4. Check **`GET /api/health`** — `blobConfigured: true`, `mds.backend: "blob"`, and tree at **`GET /api/mds`**.
-
-Import routes (require **`MDS_IMPORT_SECRET`** + **`BLOB_READ_WRITE_TOKEN`**):
-
-| Method | Path | Purpose |
-|--------|------|---------|
-| `POST` | `/api/admin/mds/import-from-disk` | Upload all `.md` under `MDS_DIR` / bundled `mds/` |
-| `POST` | `/api/admin/mds/import` | Body `{ "files": [{ "path", "content" }] }` (max 500) |
-
-You can send the secret as `Authorization: Bearer …` or header **`X-Mds-Import-Secret`**.
-
-Local Docker can keep using `./mds` until you set `BLOB_READ_WRITE_TOKEN` on the server service (optional).
+`GET /api/health` should show `mds.backend: "blob"` and `blobConfigured: true`.
 
 API (also proxied under `/md_viewer/api/…` in the browser):
 
-- `GET /api/mds` — folder tree (`tree`: nested `dir` / `file` nodes).
+- `GET /api/mds` — folder tree from Blob (`tree`: nested `dir` / `file` nodes).
 - `GET /api/mds/file?path=…` — read one file.
-- `PUT /api/mds/file` — JSON `{ "path": "…", "content": "…" }` to save (filesystem or Blob).
+- `PUT /api/mds/file` — JSON `{ "path": "…", "content": "…" }` to save to Blob.
 
 ## Local development (without Docker)
 
 ```bash
-# API
-cd server && npm install && PORT=3000 npm start
+# API (requires BLOB_READ_WRITE_TOKEN)
+cd vercel
+npm install
+export BLOB_READ_WRITE_TOKEN=vercel_blob_rw_...
+npm start
 
 # Frontend (another terminal)
-cd client && npm install && npm run dev
+cd vercel/client && npm install && npm run dev
 ```
 
 Use the URL Vite prints; with `base: '/md_viewer/'`, paths like `http://localhost:5173/md_viewer/` match production routing. The browser will call `/md_viewer/api/...`; you may need a Vite dev proxy to the API or run requests against a Compose stack for API during UI work.

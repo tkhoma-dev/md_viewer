@@ -8,11 +8,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: "3000"
-      MDS_DIR: /data/mds
-      # Optional: use Vercel Blob locally too (same token as production)
-      # BLOB_READ_WRITE_TOKEN: ${BLOB_READ_WRITE_TOKEN}
-    volumes:
-      - ./mds:/data/mds
+      BLOB_READ_WRITE_TOKEN: ${BLOB_READ_WRITE_TOKEN:?Set BLOB_READ_WRITE_TOKEN in the environment or .env file}
     expose:
       - "3000"
     networks:
