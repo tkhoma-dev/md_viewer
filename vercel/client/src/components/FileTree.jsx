@@ -63,15 +63,15 @@ function FileTreeNode({
   if (node.type === "file") {
     const active = node.path === selectedPath;
     return (
-      <li>
+      <li className="min-w-max">
         <button
           type="button"
           draggable
           style={{ paddingLeft: pad }}
           className={
             active
-              ? "flex w-full cursor-grab items-center gap-1.5 rounded-lg border border-sky-300 bg-sky-100 py-1.5 pr-2 text-left text-sm text-slate-800 transition hover:bg-sky-50 active:cursor-grabbing"
-              : "flex w-full cursor-grab items-center gap-1.5 rounded-lg border border-transparent py-1.5 pr-2 text-left text-sm text-slate-700 transition hover:bg-slate-100 active:cursor-grabbing"
+              ? "flex min-w-full w-max max-w-none cursor-grab items-center gap-1.5 rounded-lg border border-sky-300 bg-sky-100 py-1.5 pr-2 text-left text-sm text-slate-800 transition hover:bg-sky-50 active:cursor-grabbing"
+              : "flex min-w-full w-max max-w-none cursor-grab items-center gap-1.5 rounded-lg border border-transparent py-1.5 pr-2 text-left text-sm text-slate-700 transition hover:bg-slate-100 active:cursor-grabbing"
           }
           onClick={() => onSelect(node.path)}
           onDragStart={(e) => {
@@ -81,16 +81,16 @@ function FileTreeNode({
           title={`${node.path} — drag onto a folder to move`}
         >
           <FileIcon />
-          <span className="min-w-0 truncate">{node.name}</span>
+          <span className="whitespace-nowrap">{node.name}</span>
         </button>
       </li>
     );
   }
 
   return (
-    <li>
+    <li className="min-w-max">
       <div
-        className={`flex w-full items-center gap-0.5 rounded-lg border py-0.5 pr-1 transition ${dropHighlightClass(dragOver)}`}
+        className={`flex min-w-full w-max max-w-none items-center gap-0.5 rounded-lg border py-0.5 pr-1 transition ${dropHighlightClass(dragOver)}`}
       >
         <button
           type="button"
@@ -111,7 +111,7 @@ function FileTreeNode({
             {open ? "▾" : "▸"}
           </span>
           <FolderIcon open={open} />
-          <span className="min-w-0 truncate">{node.name}</span>
+          <span className="whitespace-nowrap">{node.name}</span>
         </button>
         <button
           type="button"
@@ -138,7 +138,7 @@ function FileTreeNode({
       </div>
       {open &&
         (node.children?.length > 0 ? (
-          <ul className="mt-0.5 list-none space-y-0.5 p-0">
+          <ul className="mt-0.5 min-w-max list-none space-y-0.5 p-0">
             {node.children.map((child) => (
               <FileTreeNode
                 key={child.path}
@@ -176,7 +176,7 @@ export function FileTree({
 }) {
   if (!tree?.length) return null;
   return (
-    <ul className="list-none space-y-0.5 p-0">
+    <ul className="min-w-max list-none space-y-0.5 p-0">
       {tree.map((node) => (
         <FileTreeNode
           key={node.path}

@@ -91,7 +91,7 @@ export function FilesSidebar({
   );
 
   return (
-    <aside className="flex min-h-0 flex-col rounded-xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4">
+    <aside className="flex min-h-0 min-w-0 flex-1 flex-col rounded-xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4">
       <div className="mb-2 flex shrink-0 items-center justify-between gap-2">
         <h2 className="text-base font-semibold text-slate-800">Files</h2>
         <button
@@ -119,7 +119,7 @@ export function FilesSidebar({
         </p>
       )}
       <div
-        className={`min-h-0 flex-1 overflow-auto rounded-lg border border-dashed p-2 transition ${
+        className={`min-h-0 min-w-0 flex-1 overflow-auto rounded-lg border border-dashed p-2 transition ${
           rootOver
             ? "border-sky-400 bg-sky-50"
             : "border-slate-200 bg-slate-50/50"
