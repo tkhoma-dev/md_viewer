@@ -33,6 +33,8 @@ export function createBlobMdsStorage() {
     backend: "blob",
     location: `vercel-blob:${MDS_BLOB_PREFIX}/`,
 
+    listRelativePaths,
+
     async buildTree() {
       const paths = await listRelativePaths();
       return buildTreeFromPaths(paths);

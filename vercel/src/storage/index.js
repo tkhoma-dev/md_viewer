@@ -4,6 +4,7 @@ import { createBlobMdsStorage } from "./blobMdsStorage.js";
  * @typedef {Object} MdsStorage
  * @property {"blob"} backend
  * @property {string} location
+ * @property {() => Promise<string[]>} listRelativePaths
  * @property {() => Promise<unknown[]>} buildTree
  * @property {(relPath: string) => Promise<string | null>} readFile
  * @property {(relPath: string, content: string) => Promise<void>} writeFile

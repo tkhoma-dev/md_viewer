@@ -1,5 +1,14 @@
 import { Router } from "express";
-import { assertSafeMdPath } from "./mdsPaths.js";
+import {
+  createFolder,
+  moveMarkdownFile,
+  pruneEmptyFolder,
+} from "./mdsFileOps.js";
+import {
+  assertSafeFolderPath,
+  assertSafeMdPath,
+  parentFolderPath,
+} from "./mdsPaths.js";
 
 /**
  * @param {import("./storage/index.js").MdsStorage} mdsStorage
@@ -53,6 +62,53 @@ export function createMdsRouter(mdsStorage) {
     }
   });
 
+  router.post("/folder", async (req, res) => {
+    const parent =
+      typeof req.body?.parent === "string" ? req.body.parent.trim() : "";
+    const name = typeof req.body?.name === "string" ? req.body.name.trim() : "";
+    if (!name) {
+      res.status(400).json({ error: "body must include folder name" });
+      return;
+    }
+    try {
+      const parentNorm = parent ? assertSafeFolderPath(parent) : "";
+      const folderPath = parentNorm ? `${parentNorm}/${name}` : name;
+      assertSafeFolderPath(folderPath);
+      const result = await createFolder(mdsStorage, folderPath);
+      res.status(201).json({ ok: true, ...result });
+    } catch (e) {
+      const err = /** @type {Error & { status?: number }} */ (e);
+      const status = err.status === 409 ? 409 : 400;
+      res.status(status).json({ error: err.message });
+    }
+  });
+
+  router.post("/file/move", async (req, res) => {
+    const from = req.body?.from;
+    const to = req.body?.to;
+    if (typeof from !== "string" || typeof to !== "string") {
+      res.status(400).json({
+        error: "body must include from and to path strings",
+      });
+      return;
+    }
+    try {
+      const result = await moveMarkdownFile(mdsStorage, from, to);
+      res.json({ ok: true, ...result });
+    } catch (e) {
+      const err = /** @type {Error & { status?: number }} */ (e);
+      if (err.status === 404) {
+        res.status(404).json({ error: err.message });
+        return;
+      }
+      if (err.status === 409) {
+        res.status(409).json({ error: err.message });
+        return;
+      }
+      res.status(400).json({ error: err.message });
+    }
+  });
+
   router.delete("/file", async (req, res) => {
     const rel = req.body?.path ?? req.query.path;
     if (typeof rel !== "string") {
@@ -67,6 +123,10 @@ export function createMdsRouter(mdsStorage) {
         return;
       }
       await mdsStorage.deleteFile(normalized);
+      const parent = parentFolderPath(normalized);
+      if (parent) {
+        await pruneEmptyFolder(mdsStorage, parent);
+      }
       res.json({ ok: true, path: normalized, deleted: true });
     } catch (e) {
       const err = /** @type {Error} */ (e);

@@ -1,3 +1,5 @@
+import { isFolderPlaceholderPath } from "../mdsPaths.js";
+
 /**
  * @param {string[]} paths Relative .md paths (e.g. `notes/a.md`)
  * @returns {Array<{ type: 'dir', name: string, path: string, children: unknown[] } | { type: 'file', name: string, path: string }>}
@@ -8,6 +10,7 @@ export function buildTreeFromPaths(paths) {
 
   for (const relPath of sorted) {
     if (!relPath.endsWith(".md")) continue;
+    if (isFolderPlaceholderPath(relPath)) continue;
     const parts = relPath.split("/");
     let nodes = root;
     let pathSoFar = "";

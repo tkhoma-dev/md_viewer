@@ -1,7 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { API_BASE } from "../lib/api.js";
+import { createFolder } from "../lib/createFolder.js";
 import { deleteMarkdownFile } from "../lib/deleteMarkdownFile.js";
+import { moveMarkdownFile } from "../lib/moveMarkdownFile.js";
 import { saveMarkdownFile } from "../lib/saveMarkdownFile.js";
+import {
+  destinationPathInFolder,
+  parentFolderFromSelectedFile,
+} from "../utils/parentFolder.js";
 import { collectMarkdownFromDrop } from "../utils/dropMarkdownFiles.js";
 
 export function useMarkdownFiles({ onFileLoaded }) {
@@ -12,6 +18,7 @@ export function useMarkdownFiles({ onFileLoaded }) {
   const [saveState, setSaveState] = useState(null);
   const [deleteState, setDeleteState] = useState(null);
   const [uploadState, setUploadState] = useState(null);
+  const [treeActionState, setTreeActionState] = useState(null);
 
   const refreshList = useCallback(() => {
     return fetch(`${API_BASE}/mds`)
@@ -87,6 +94,49 @@ export function useMarkdownFiles({ onFileLoaded }) {
       .catch((e) => setDeleteState(String(e)));
   }, [selectedPath, refreshList]);
 
+  const createFolderAt = useCallback(
+    async (parentDir = "") => {
+      const name = window.prompt("New folder name");
+      if (!name?.trim()) return;
+      if (name.includes("/") || name.includes("\\")) {
+        setTreeActionState("Folder name cannot contain slashes");
+        return;
+      }
+      setTreeActionState("creating…");
+      try {
+        await createFolder({ parent: parentDir, name: name.trim() });
+        await refreshList();
+        setTreeActionState("Folder created");
+      } catch (e) {
+        setTreeActionState(String(e));
+      }
+    },
+    [refreshList],
+  );
+
+  const createFolderNearSelection = useCallback(() => {
+    createFolderAt(parentFolderFromSelectedFile(selectedPath));
+  }, [createFolderAt, selectedPath]);
+
+  const moveFileToFolder = useCallback(
+    async (fromPath, targetFolder) => {
+      const toPath = destinationPathInFolder(fromPath, targetFolder);
+      if (toPath === fromPath) return;
+      setTreeActionState("moving…");
+      try {
+        await moveMarkdownFile(fromPath, toPath);
+        if (selectedPath === fromPath) {
+          setSelectedPath(toPath);
+        }
+        await refreshList();
+        setTreeActionState("Moved");
+      } catch (e) {
+        setTreeActionState(String(e));
+      }
+    },
+    [refreshList, selectedPath],
+  );
+
   const uploadDroppedFiles = useCallback(
     async (dataTransfer, targetDir = "") => {
       setUploadState("uploading");
@@ -122,5 +172,9 @@ export function useMarkdownFiles({ onFileLoaded }) {
     remove,
     uploadDroppedFiles,
     uploadState,
+    createFolderAt,
+    createFolderNearSelection,
+    moveFileToFolder,
+    treeActionState,
   };
 }

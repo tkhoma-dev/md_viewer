@@ -32,6 +32,10 @@ export default function App() {
     remove,
     uploadDroppedFiles,
     uploadState,
+    createFolderNearSelection,
+    createFolderAt,
+    moveFileToFolder,
+    treeActionState,
   } = useMarkdownFiles({ onFileLoaded: resetScroll });
 
   return (
@@ -64,6 +68,10 @@ export default function App() {
             loadError={loadError}
             onUploadToFolder={uploadDroppedFiles}
             uploadState={uploadState}
+            treeActionState={treeActionState}
+            onCreateFolder={createFolderNearSelection}
+            onCreateSubfolder={createFolderAt}
+            onMoveFile={moveFileToFolder}
           />
 
           <div className="flex min-h-0 min-w-0 w-full flex-col gap-3 lg:min-h-0">
