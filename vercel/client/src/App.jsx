@@ -28,6 +28,7 @@ export default function App() {
     setDraft,
     loadError,
     saveState,
+    isDirty,
     deleteState,
     refreshList,
     save,
@@ -129,6 +130,7 @@ export default function App() {
               selectedPath={selectedPath}
               onSave={save}
               saveState={saveState}
+              isDirty={isDirty}
               onDownload={download}
               onDelete={remove}
               deleteState={deleteState}

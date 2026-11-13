@@ -8,6 +8,7 @@ export function ActionFooter({
   selectedPath,
   onSave,
   saveState,
+  isDirty,
   onDownload,
   onDelete,
   deleteState,
@@ -32,8 +33,11 @@ export function ActionFooter({
             <button
               type="button"
               className="rounded-lg border border-sky-600 bg-sky-500 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-50"
-              disabled={!selectedPath || deleteState === "deleting"}
+              disabled={!selectedPath || !isDirty || deleteState === "deleting"}
               onClick={onSave}
+              title={
+                isDirty ? "Save changes to storage" : "No changes to save"
+              }
             >
               Save
             </button>

@@ -16,6 +16,8 @@ export function useMarkdownFiles({ onFileLoaded }) {
   const [tree, setTree] = useState([]);
   const [selectedPath, setSelectedPath] = useState(null);
   const [draft, setDraft] = useState("");
+  /** Last saved / loaded content for the current file (dirty check). */
+  const [savedContent, setSavedContent] = useState("");
   const [loadError, setLoadError] = useState(null);
   const [saveState, setSaveState] = useState(null);
   const [deleteState, setDeleteState] = useState(null);
@@ -46,6 +48,7 @@ export function useMarkdownFiles({ onFileLoaded }) {
   useEffect(() => {
     if (!selectedPath) {
       setDraft("");
+      setSavedContent("");
       return;
     }
     setSaveState(null);
@@ -57,13 +60,16 @@ export function useMarkdownFiles({ onFileLoaded }) {
         return r.json();
       })
       .then((data) => {
-        setDraft(data.content ?? "");
+        const content = data.content ?? "";
+        setDraft(content);
+        setSavedContent(content);
         setLoadError(null);
         onFileLoaded?.();
       })
       .catch((e) => {
         setLoadError(String(e));
         setDraft("");
+        setSavedContent("");
       });
   }, [selectedPath, onFileLoaded]);
 
@@ -73,15 +79,16 @@ export function useMarkdownFiles({ onFileLoaded }) {
   }, [selectedPath, draft]);
 
   const save = useCallback(() => {
-    if (!selectedPath) return;
+    if (!selectedPath || draft === savedContent) return;
     setSaveState("saving");
     saveMarkdownFile(selectedPath, draft)
       .then(() => {
+        setSavedContent(draft);
         setSaveState("saved");
         refreshList();
       })
       .catch((e) => setSaveState(String(e)));
-  }, [selectedPath, draft, refreshList]);
+  }, [selectedPath, draft, savedContent, refreshList]);
 
   const remove = useCallback(() => {
     if (!selectedPath) return;
@@ -195,6 +202,9 @@ export function useMarkdownFiles({ onFileLoaded }) {
     [refreshList]
   );
 
+  const isDirty =
+    Boolean(selectedPath) && draft !== savedContent;
+
   return {
     tree,
     selectedPath,
@@ -203,6 +213,7 @@ export function useMarkdownFiles({ onFileLoaded }) {
     setDraft,
     loadError,
     saveState,
+    isDirty,
     deleteState,
     refreshList,
     save,
