@@ -31,6 +31,7 @@ export default function App() {
     deleteState,
     refreshList,
     save,
+    download,
     remove,
     uploadDroppedFiles,
     uploadState,
@@ -128,6 +129,7 @@ export default function App() {
               selectedPath={selectedPath}
               onSave={save}
               saveState={saveState}
+              onDownload={download}
               onDelete={remove}
               deleteState={deleteState}
             />

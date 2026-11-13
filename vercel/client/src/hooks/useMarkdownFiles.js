@@ -3,6 +3,7 @@ import { API_BASE } from "../lib/api.js";
 import { createFolder } from "../lib/createFolder.js";
 import { deleteFolder } from "../lib/deleteFolder.js";
 import { deleteMarkdownFile } from "../lib/deleteMarkdownFile.js";
+import { downloadMarkdownFile } from "../lib/downloadMarkdownFile.js";
 import { moveMarkdownFile } from "../lib/moveMarkdownFile.js";
 import { saveMarkdownFile } from "../lib/saveMarkdownFile.js";
 import {
@@ -65,6 +66,11 @@ export function useMarkdownFiles({ onFileLoaded }) {
         setDraft("");
       });
   }, [selectedPath, onFileLoaded]);
+
+  const download = useCallback(() => {
+    if (!selectedPath) return;
+    downloadMarkdownFile(selectedPath, draft);
+  }, [selectedPath, draft]);
 
   const save = useCallback(() => {
     if (!selectedPath) return;
@@ -200,6 +206,7 @@ export function useMarkdownFiles({ onFileLoaded }) {
     deleteState,
     refreshList,
     save,
+    download,
     remove,
     uploadDroppedFiles,
     uploadState,

@@ -8,6 +8,7 @@ export function ActionFooter({
   selectedPath,
   onSave,
   saveState,
+  onDownload,
   onDelete,
   deleteState,
 }) {
@@ -35,6 +36,15 @@ export function ActionFooter({
               onClick={onSave}
             >
               Save
+            </button>
+            <button
+              type="button"
+              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={!selectedPath || deleteState === "deleting"}
+              onClick={onDownload}
+              title="Download this file to your computer"
+            >
+              Download
             </button>
             <button
               type="button"
@@ -70,6 +80,17 @@ export function ActionFooter({
                 <span className="text-sm text-red-700">{deleteState}</span>
               )}
           </>
+        )}
+        {selectedPath && editorCollapsed && (
+          <button
+            type="button"
+            className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={deleteState === "deleting"}
+            onClick={onDownload}
+            title="Download this file to your computer"
+          >
+            Download
+          </button>
         )}
       </div>
       {!previewCollapsed && (
