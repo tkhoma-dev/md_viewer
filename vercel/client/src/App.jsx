@@ -33,6 +33,8 @@ export default function App() {
     refreshList,
     save,
     download,
+    insertImage,
+    imageUploadState,
     remove,
     uploadDroppedFiles,
     uploadState,
@@ -111,6 +113,8 @@ export default function App() {
                 onDraftChange={setDraft}
                 editorScrollRef={editorScrollRef}
                 onEditorScroll={handleEditorScroll}
+                onInsertImage={insertImage}
+                imageUploadState={imageUploadState}
               />
               <PreviewPane
                 collapsed={previewCollapsed}

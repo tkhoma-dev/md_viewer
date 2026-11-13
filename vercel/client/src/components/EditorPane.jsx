@@ -1,4 +1,6 @@
+import { useRef } from "react";
 import { CollapseIcon } from "./icons.jsx";
+import { insertInTextarea } from "../utils/insertInTextarea.js";
 
 export function EditorPane({
   collapsed,
@@ -8,7 +10,10 @@ export function EditorPane({
   onDraftChange,
   editorScrollRef,
   onEditorScroll,
+  onInsertImage,
+  imageUploadState,
 }) {
+  const fileInputRef = useRef(null);
   return (
     <section
       className={
@@ -31,10 +36,52 @@ export function EditorPane({
         </button>
       ) : (
         <>
-          <div className="mb-2 shrink-0">
-            <span className="block truncate text-sm text-slate-500">
+          <div className="mb-2 flex shrink-0 items-center justify-between gap-2">
+            <span className="min-w-0 truncate text-sm text-slate-500">
               {selectedPath ? selectedPath : "Select a file"}
             </span>
+            <div className="flex shrink-0 items-center gap-2">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml"
+                className="hidden"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  e.target.value = "";
+                  if (!file || !onInsertImage) return;
+                  const ta = editorScrollRef?.current;
+                  const result = await onInsertImage(
+                    file,
+                    ta?.selectionStart,
+                    ta?.selectionEnd,
+                  );
+                  if (!result) return;
+                  const { nextValue, cursor } = insertInTextarea(
+                    draft,
+                    result.selectionStart,
+                    result.selectionEnd,
+                    result.snippet,
+                  );
+                  onDraftChange(nextValue);
+                  requestAnimationFrame(() => {
+                    if (ta) {
+                      ta.focus();
+                      ta.setSelectionRange(cursor, cursor);
+                    }
+                  });
+                }}
+              />
+              <button
+                type="button"
+                className="cursor-pointer rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={!selectedPath || imageUploadState === "uploading"}
+                onClick={() => fileInputRef.current?.click()}
+                title="Upload image to storage and insert markdown"
+              >
+                {imageUploadState === "uploading" ? "Uploading…" : "Image"}
+              </button>
+            </div>
           </div>
           <textarea
             ref={editorScrollRef}

@@ -109,6 +109,10 @@ API (also proxied under `/md_viewer/api/…` in the browser):
 - `POST /api/mds/folder` — JSON `{ "parent": "optional/parent", "name": "folder-name" }` creates an empty folder (stores a hidden `…/_folder.md` marker in Blob).
 - `DELETE /api/mds/folder` — JSON `{ "path": "folder/path" }` removes the folder and all markdown blobs under it.
 - `POST /api/mds/file/move` — JSON `{ "from": "old/path.md", "to": "new/path.md" }` moves a file within Blob storage.
+- `POST /api/mds/image` — `multipart/form-data` field `file` uploads to hidden Blob folder `mds/image/` (not shown in the file tree).
+- `GET /api/mds/image?path=image/…` — serves an uploaded image for markdown preview.
+
+In the editor, use **Image** to upload and insert `![](…)` at the cursor (web client only).
 
 In the sidebar, use **New folder** (or **+** on a folder row). Drag a file onto a folder—or onto the dashed root area—to move it. The `_folder.md` markers are omitted from the tree UI.
 

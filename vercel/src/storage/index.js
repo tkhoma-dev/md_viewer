@@ -1,3 +1,4 @@
+import { createBlobImageStorage } from "./blobImageStorage.js";
 import { createBlobMdsStorage } from "./blobMdsStorage.js";
 
 /**
@@ -14,6 +15,12 @@ import { createBlobMdsStorage } from "./blobMdsStorage.js";
 /**
  * @returns {MdsStorage}
  */
+/**
+ * @typedef {Object} ImageStorage
+ * @property {(originalName: string, buffer: Buffer, mimeType?: string) => Promise<{ path: string, contentType: string }>} upload
+ * @property {(relPath: string) => Promise<{ path: string, contentType: string, data: Uint8Array } | null>} read
+ */
+
 export function createMdsStorage() {
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
     throw new Error(
@@ -21,4 +28,14 @@ export function createMdsStorage() {
     );
   }
   return createBlobMdsStorage();
+}
+
+/** @returns {ImageStorage} */
+export function createImageStorage() {
+  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+    throw new Error(
+      "BLOB_READ_WRITE_TOKEN is required — markdown is stored only in Vercel Blob.",
+    );
+  }
+  return createBlobImageStorage();
 }

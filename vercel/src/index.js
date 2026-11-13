@@ -1,11 +1,12 @@
 import express from "express";
 import { createMdsRouter } from "./mds.js";
-import { createMdsStorage } from "./storage/index.js";
+import { createImageStorage, createMdsStorage } from "./storage/index.js";
 
 const app = express();
 const port = Number(process.env.PORT) || 3000;
 
 const mdsStorage = createMdsStorage();
+const imageStorage = createImageStorage();
 
 app.use(express.json({ limit: "2mb" }));
 
@@ -31,7 +32,7 @@ app.get("/api/health", (_req, res) => {
   });
 });
 
-app.use("/api/mds", createMdsRouter(mdsStorage));
+app.use("/api/mds", createMdsRouter(mdsStorage, imageStorage));
 
 export default app;
 

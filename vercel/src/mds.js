@@ -1,4 +1,5 @@
 import { Router } from "express";
+import multer from "multer";
 import {
   createFolder,
   deleteFolder,
@@ -8,13 +9,21 @@ import {
 import {
   assertSafeFolderPath,
   assertSafeMdPath,
+  assertSafeImagePath,
+  isHiddenFromFileTree,
   parentFolderPath,
 } from "./mdsPaths.js";
 
+const imageUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 12 * 1024 * 1024 },
+});
+
 /**
  * @param {import("./storage/index.js").MdsStorage} mdsStorage
+ * @param {import("./storage/index.js").ImageStorage} imageStorage
  */
-export function createMdsRouter(mdsStorage) {
+export function createMdsRouter(mdsStorage, imageStorage) {
   const router = Router();
 
   router.get("/", async (_req, res) => {
@@ -23,6 +32,50 @@ export function createMdsRouter(mdsStorage) {
       res.json({ tree });
     } catch (e) {
       res.status(500).json({ error: String(/** @type {Error} */ (e).message) });
+    }
+  });
+
+  router.post("/image", imageUpload.single("file"), async (req, res) => {
+    if (!req.file?.buffer?.length) {
+      res.status(400).json({ error: "multipart file field is required" });
+      return;
+    }
+    try {
+      const result = await imageStorage.upload(
+        req.file.originalname,
+        req.file.buffer,
+        req.file.mimetype,
+      );
+      res.status(201).json({
+        ok: true,
+        path: result.path,
+        url: `/api/mds/image?path=${encodeURIComponent(result.path)}`,
+      });
+    } catch (e) {
+      const err = /** @type {Error} */ (e);
+      res.status(400).json({ error: err.message });
+    }
+  });
+
+  router.get("/image", async (req, res) => {
+    const rel = req.query.path;
+    if (typeof rel !== "string") {
+      res.status(400).json({ error: "query path is required" });
+      return;
+    }
+    try {
+      const normalized = assertSafeImagePath(rel);
+      const asset = await imageStorage.read(normalized);
+      if (asset == null) {
+        res.status(404).json({ error: "not found" });
+        return;
+      }
+      res.setHeader("Content-Type", asset.contentType);
+      res.setHeader("Cache-Control", "private, max-age=3600");
+      res.send(Buffer.from(asset.data));
+    } catch (e) {
+      const err = /** @type {Error} */ (e);
+      res.status(400).json({ error: err.message });
     }
   });
 
@@ -55,6 +108,10 @@ export function createMdsRouter(mdsStorage) {
     }
     try {
       const normalized = assertSafeMdPath(rel);
+      if (isHiddenFromFileTree(normalized)) {
+        res.status(400).json({ error: "invalid path" });
+        return;
+      }
       await mdsStorage.writeFile(normalized, content);
       res.json({ ok: true, path: normalized });
     } catch (e) {

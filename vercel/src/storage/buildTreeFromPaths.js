@@ -1,4 +1,8 @@
-import { isFolderPlaceholderPath, parentFolderPath } from "../mdsPaths.js";
+import {
+  isFolderPlaceholderPath,
+  isHiddenFromFileTree,
+  parentFolderPath,
+} from "../mdsPaths.js";
 
 /**
  * @param {Array<{ type: 'dir' | 'file', name: string, path: string, children?: unknown[] }>} nodes
@@ -30,6 +34,7 @@ export function buildTreeFromPaths(paths) {
   const root = [];
 
   for (const relPath of sorted) {
+    if (isHiddenFromFileTree(relPath)) continue;
     if (!relPath.endsWith(".md")) continue;
     if (isFolderPlaceholderPath(relPath)) {
       ensureDirPath(root, parentFolderPath(relPath));

@@ -2,6 +2,7 @@ import {
   assertSafeFolderPath,
   assertSafeMdPath,
   folderPlaceholderMdPath,
+  IMAGE_STORAGE_DIR,
   isFolderPlaceholderPath,
   parentFolderPath,
 } from "./mdsPaths.js";
@@ -12,6 +13,9 @@ import {
  */
 export async function createFolder(storage, folderPath) {
   const dir = assertSafeFolderPath(folderPath);
+  if (dir === IMAGE_STORAGE_DIR || dir.startsWith(`${IMAGE_STORAGE_DIR}/`)) {
+    throw new Error("reserved folder name");
+  }
   const placeholder = folderPlaceholderMdPath(dir);
   const paths = await storage.listRelativePaths();
   const prefix = `${dir}/`;
