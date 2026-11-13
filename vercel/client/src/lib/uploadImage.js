@@ -14,8 +14,3 @@ export async function uploadMarkdownImage(file) {
   }
   return data;
 }
-
-/** @param {string} imagePath from API e.g. `image/uuid.png` */
-export function imageUrlForMarkdown(imagePath) {
-  return `${API_BASE}/mds/image?path=${encodeURIComponent(imagePath)}`;
-}

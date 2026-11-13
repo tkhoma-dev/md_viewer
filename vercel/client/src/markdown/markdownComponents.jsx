@@ -1,5 +1,18 @@
+import { resolveImageUrl } from "../lib/resolveMarkdownImages.js";
+
 /** Cursor/VS Code–style table chrome (GFM tables need `remark-gfm`). */
 export const markdownComponents = {
+  img({ src, alt, ...props }) {
+    return (
+      <img
+        {...props}
+        src={resolveImageUrl(src)}
+        alt={alt ?? ""}
+        className="my-4 max-h-[32rem] w-auto max-w-full rounded-lg border border-slate-200 bg-white"
+        loading="lazy"
+      />
+    );
+  },
   table({ children, ...props }) {
     return (
       <div className="not-prose my-4 w-full overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm">

@@ -1,6 +1,10 @@
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useMemo } from 'react';
+import { Image, StyleSheet, Text, View } from 'react-native';
 import Markdown from 'react-native-markdown-display';
+import {
+  resolveImageUrl,
+  resolveMarkdownImageUrls,
+} from '../utils/resolveMarkdownImages';
 
 type Props = {
   path: string | null;
@@ -49,9 +53,39 @@ const markdownStyles = StyleSheet.create({
   link: {
     color: '#0284c7',
   },
+  image: {
+    marginVertical: 10,
+  },
 });
 
+const markdownRules = {
+  image: (
+    node: { key: string; attributes: { src?: string; alt?: string } },
+    _children: unknown,
+    _parent: unknown,
+    styles: typeof markdownStyles,
+  ) => {
+    const src = node.attributes?.src ?? '';
+    const uri = resolveImageUrl(src);
+    const alt = node.attributes?.alt ?? '';
+    return (
+      <Image
+        key={node.key}
+        accessibilityLabel={alt || 'Image'}
+        source={{ uri }}
+        style={[styles.image, { width: '100%', height: 220 }]}
+        resizeMode="contain"
+      />
+    );
+  },
+};
+
 export function MarkdownPreview({ path, content, loading, error }: Props) {
+  const resolvedContent = useMemo(
+    () => (content ? resolveMarkdownImageUrls(content) : ''),
+    [content],
+  );
+
   if (!path) {
     return (
       <View style={styles.placeholder}>
@@ -80,7 +114,9 @@ export function MarkdownPreview({ path, content, loading, error }: Props) {
 
   return (
     <View style={styles.markdownWrap}>
-      <Markdown style={markdownStyles}>{content ?? ''}</Markdown>
+      <Markdown style={markdownStyles} rules={markdownRules}>
+        {resolvedContent}
+      </Markdown>
     </View>
   );
 }
@@ -104,5 +140,9 @@ const styles = StyleSheet.create({
   },
   markdownWrap: {
     paddingBottom: 24,
+  },
+  image: {
+    backgroundColor: '#f8fafc',
+    borderRadius: 8,
   },
 });

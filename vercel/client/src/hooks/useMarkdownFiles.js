@@ -4,7 +4,7 @@ import { createFolder } from "../lib/createFolder.js";
 import { deleteFolder } from "../lib/deleteFolder.js";
 import { deleteMarkdownFile } from "../lib/deleteMarkdownFile.js";
 import { downloadMarkdownFile } from "../lib/downloadMarkdownFile.js";
-import { imageUrlForMarkdown, uploadMarkdownImage } from "../lib/uploadImage.js";
+import { uploadMarkdownImage } from "../lib/uploadImage.js";
 import { moveMarkdownFile } from "../lib/moveMarkdownFile.js";
 import { saveMarkdownFile } from "../lib/saveMarkdownFile.js";
 import {
@@ -81,9 +81,8 @@ export function useMarkdownFiles({ onFileLoaded }) {
       setImageUploadState("uploading");
       try {
         const { path: imagePath } = await uploadMarkdownImage(file);
-        const url = imageUrlForMarkdown(imagePath);
         const alt = file.name.replace(/\.[^.]+$/, "") || "image";
-        const snippet = `![${alt}](${url})`;
+        const snippet = `![${alt}](${imagePath})`;
         setImageUploadState("done");
         return { snippet, selectionStart, selectionEnd };
       } catch (e) {

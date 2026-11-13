@@ -112,7 +112,7 @@ API (also proxied under `/md_viewer/api/…` in the browser):
 - `POST /api/mds/image` — `multipart/form-data` field `file` uploads to hidden Blob folder `mds/image/` (not shown in the file tree).
 - `GET /api/mds/image?path=image/…` — serves an uploaded image for markdown preview.
 
-In the editor, use **Image** to upload and insert `![](…)` at the cursor (web client only).
+In the editor, use **Image** to upload and insert portable markdown like `![](image/uuid.png)` (no domain in the file). Web and Android resolve `image/…` via `/api/mds/image` when rendering.
 
 In the sidebar, use **New folder** (or **+** on a folder row). Drag a file onto a folder—or onto the dashed root area—to move it. The `_folder.md` markers are omitted from the tree UI.
 
