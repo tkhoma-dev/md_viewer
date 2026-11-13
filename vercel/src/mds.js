@@ -53,5 +53,26 @@ export function createMdsRouter(mdsStorage) {
     }
   });
 
+  router.delete("/file", async (req, res) => {
+    const rel = req.body?.path ?? req.query.path;
+    if (typeof rel !== "string") {
+      res.status(400).json({ error: "path is required (query or JSON body)" });
+      return;
+    }
+    try {
+      const normalized = assertSafeMdPath(rel);
+      const existing = await mdsStorage.readFile(normalized);
+      if (existing == null) {
+        res.status(404).json({ error: "not found" });
+        return;
+      }
+      await mdsStorage.deleteFile(normalized);
+      res.json({ ok: true, path: normalized, deleted: true });
+    } catch (e) {
+      const err = /** @type {Error} */ (e);
+      res.status(400).json({ error: err.message });
+    }
+  });
+
   return router;
 }

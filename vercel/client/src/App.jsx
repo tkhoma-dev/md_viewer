@@ -26,8 +26,10 @@ export default function App() {
     setDraft,
     loadError,
     saveState,
+    deleteState,
     refreshList,
     save,
+    remove,
     uploadDroppedFiles,
     uploadState,
   } = useMarkdownFiles({ onFileLoaded: resetScroll });
@@ -93,6 +95,8 @@ export default function App() {
               selectedPath={selectedPath}
               onSave={save}
               saveState={saveState}
+              onDelete={remove}
+              deleteState={deleteState}
             />
           </div>
         </div>

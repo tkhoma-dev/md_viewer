@@ -8,6 +8,8 @@ export function ActionFooter({
   selectedPath,
   onSave,
   saveState,
+  onDelete,
+  deleteState,
 }) {
   return (
     <footer
@@ -29,10 +31,19 @@ export function ActionFooter({
             <button
               type="button"
               className="rounded-lg border border-sky-600 bg-sky-500 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-50"
-              disabled={!selectedPath}
+              disabled={!selectedPath || deleteState === "deleting"}
               onClick={onSave}
             >
               Save
+            </button>
+            <button
+              type="button"
+              className="rounded-lg border border-red-300 bg-white px-3 py-1.5 text-sm font-medium text-red-700 shadow-sm transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={!selectedPath || deleteState === "deleting"}
+              onClick={onDelete}
+              title="Delete this file from storage"
+            >
+              Delete
             </button>
             {saveState === "saving" && (
               <span className="text-sm text-slate-500">Saving…</span>
@@ -44,6 +55,19 @@ export function ActionFooter({
               saveState !== "saving" &&
               saveState !== "saved" && (
                 <span className="text-sm text-red-700">{saveState}</span>
+              )}
+            {deleteState === "deleting" && (
+              <span className="text-sm text-slate-500">Deleting…</span>
+            )}
+            {deleteState === "deleted" && (
+              <span className="text-sm font-medium text-emerald-700">
+                Deleted
+              </span>
+            )}
+            {deleteState &&
+              deleteState !== "deleting" &&
+              deleteState !== "deleted" && (
+                <span className="text-sm text-red-700">{deleteState}</span>
               )}
           </>
         )}

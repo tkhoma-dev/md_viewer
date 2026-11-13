@@ -105,6 +105,7 @@ API (also proxied under `/md_viewer/api/…` in the browser):
 - `GET /api/mds` — folder tree from Blob (`tree`: nested `dir` / `file` nodes).
 - `GET /api/mds/file?path=…` — read one file.
 - `PUT /api/mds/file` — JSON `{ "path": "…", "content": "…" }` to save to Blob.
+- `DELETE /api/mds/file` — JSON `{ "path": "…" }` (or `?path=…`) to remove the blob permanently.
 
 ## Local development (without Docker)
 

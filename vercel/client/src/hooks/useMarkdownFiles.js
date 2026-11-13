@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { API_BASE } from "../lib/api.js";
+import { deleteMarkdownFile } from "../lib/deleteMarkdownFile.js";
 import { saveMarkdownFile } from "../lib/saveMarkdownFile.js";
 import { collectMarkdownFromDrop } from "../utils/dropMarkdownFiles.js";
 
@@ -9,6 +10,7 @@ export function useMarkdownFiles({ onFileLoaded }) {
   const [draft, setDraft] = useState("");
   const [loadError, setLoadError] = useState(null);
   const [saveState, setSaveState] = useState(null);
+  const [deleteState, setDeleteState] = useState(null);
   const [uploadState, setUploadState] = useState(null);
 
   const refreshList = useCallback(() => {
@@ -38,6 +40,7 @@ export function useMarkdownFiles({ onFileLoaded }) {
       return;
     }
     setSaveState(null);
+    setDeleteState(null);
     const q = new URLSearchParams({ path: selectedPath });
     fetch(`${API_BASE}/mds/file?${q}`)
       .then((r) => {
@@ -65,6 +68,24 @@ export function useMarkdownFiles({ onFileLoaded }) {
       })
       .catch((e) => setSaveState(String(e)));
   }, [selectedPath, draft, refreshList]);
+
+  const remove = useCallback(() => {
+    if (!selectedPath) return;
+    const ok = window.confirm(
+      `Delete "${selectedPath}" permanently? This removes the file from storage and cannot be undone.`,
+    );
+    if (!ok) return;
+    setDeleteState("deleting");
+    setSaveState(null);
+    deleteMarkdownFile(selectedPath)
+      .then(async () => {
+        setDeleteState("deleted");
+        setSelectedPath(null);
+        setDraft("");
+        await refreshList();
+      })
+      .catch((e) => setDeleteState(String(e)));
+  }, [selectedPath, refreshList]);
 
   const uploadDroppedFiles = useCallback(
     async (dataTransfer, targetDir = "") => {
@@ -95,8 +116,10 @@ export function useMarkdownFiles({ onFileLoaded }) {
     setDraft,
     loadError,
     saveState,
+    deleteState,
     refreshList,
     save,
+    remove,
     uploadDroppedFiles,
     uploadState,
   };
