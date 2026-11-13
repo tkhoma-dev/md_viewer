@@ -23,7 +23,7 @@ export function ActionFooter({
           <>
             <button
               type="button"
-              className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-sm font-medium text-slate-600 shadow-sm transition hover:bg-slate-50"
+              className="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-sm font-medium text-slate-600 shadow-sm transition hover:bg-slate-50"
               onClick={onCollapseEditor}
               title="Collapse editor"
             >
@@ -32,7 +32,7 @@ export function ActionFooter({
             </button>
             <button
               type="button"
-              className="rounded-lg border border-sky-600 bg-sky-500 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-lg border border-sky-600 bg-sky-500 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition hover:bg-sky-600 enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
               disabled={!selectedPath || !isDirty || deleteState === "deleting"}
               onClick={onSave}
               title={
@@ -43,7 +43,7 @@ export function ActionFooter({
             </button>
             <button
               type="button"
-              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+              className="cursor-pointer rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
               disabled={!selectedPath || deleteState === "deleting"}
               onClick={onDownload}
               title="Download this file to your computer"
@@ -52,7 +52,7 @@ export function ActionFooter({
             </button>
             <button
               type="button"
-              className="rounded-lg border border-red-300 bg-white px-3 py-1.5 text-sm font-medium text-red-700 shadow-sm transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+              className="cursor-pointer rounded-lg border border-red-300 bg-white px-3 py-1.5 text-sm font-medium text-red-700 shadow-sm transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
               disabled={!selectedPath || deleteState === "deleting"}
               onClick={onDelete}
               title="Delete this file from storage"
